@@ -51,6 +51,12 @@ def messageForPlayer(player, players, chars):
     msg += " and ".join(players[i] for i in range(len(players)) if chars[i] == 'Merlin' or chars[i] == 'Morgana')
   return msg
 
+def messageForSpectator(players, chars):
+  msg = "You are a spectator!\n\n"
+  for i in range(len(players)):
+    msg += "{0} is {1}\n".format(players[i], identity[chars[i]])
+  return msg
+
 urls = (
     '/', 'index',
     '/reveal', 'reveal'
@@ -73,11 +79,18 @@ class reveal:
         players.append(input[nameKey])
         emails.append(input[emailKey])
 
+    spectators = []
+    if len(input['spectatorEmails']) > 0:
+      spectators = [e.strip() for e in input['spectatorEmails'].split(',')]
+
     chars = assignCharacters(players)
     for i in range(len(players)):
       web.sendmail('avalon@deancode.com', emails[i], "Avalon Reveal!", messageForPlayer(players[i], players, chars))
+
+    if len(spectators) > 0:
+      web.sendmail('avalon@deancode.com', spectators, "Avalon Spectator Reveal!", messageForSpectator(players, chars))
     
-    return "Sent emails for {0} players".format(len(players))
+    return "Sent emails for {0} players, {1} spectators".format(len(players), len(spectators))
 
 if __name__ == "__main__":
   app = web.application(urls, globals())
